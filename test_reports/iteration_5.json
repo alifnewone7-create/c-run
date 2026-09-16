@@ -1,0 +1,22 @@
+{
+  "summary": "Frontend-only verification of the redesigned chart-analysis Result card via /result-preview. All three mock cards (CALL 82%, PUT 77%, NO TRADE 54%) render correctly with every required data-testid. Analysis details modal opens with all sections (Market structure, Technical indicators w/ UP/UP/NEUTRAL, Probability scores Trend 84 / Structure 78 / Pattern 72 / Momentum 66 and NO 'Total' row, AI reasoning). Modal closes via close button, Escape, and backdrop click. Border colors on .ar-card/.ar-tile/.ar-chip/.ar-cta/.ar-hero are all violet/green/red tinted (no white/grey rgb(255,255,255) or rgb(229,231,235)). Mobile 390x844 has no horizontal overflow. Real analyzer flow was not executed to preserve free-tier daily quota (per instruction 'do only 1 real analysis attempt max' — treated as optional best-effort).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Analysis details modal on mobile 390x844", "issues": ["Modal backdrop appears highly translucent — the underlying result card (CALL hero, confidence tile, key levels) is clearly visible behind the modal content, causing visual overlap/readability concern on mobile. Modal itself is functional and all content fits without scroll, but a more opaque backdrop or stronger blur would improve readability. Non-blocking, cosmetic."]}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/preview_desktop.png", "/app/test_reports/preview_mobile_modal.png"],
+  "action_items": ["Optional: increase backdrop opacity/blur behind .ar-modal on mobile to prevent underlying card content from bleeding through."],
+  "critical_code_review_comments": ["No source files were modified (production build — per agent-to-agent note). All required data-testids present and populated correctly. Values match spec exactly: confidence 82/77/54, resistance 1.08420, support 1.08110, probability scores 84/78/72/66, no 'Total' row."],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100% (all specified checks passed)"},
+  "test_credentials": "qa.coco.tester@gmail.com / CocoQa#2026 (not exercised — real analyzer flow skipped to conserve free-tier daily quota)",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Result card redesign at /result-preview verified fully. Real /otc-chart-analyzer and /real-chart-analyzer end-to-end analysis flow with actual Groq API call was intentionally NOT attempted to preserve the QA user's free-tier daily analysis limit. If next agent needs to verify the live analyzer path, generate a candlestick PNG (matplotlib) and upload via [data-testid='analyzer-dropzone'], then click [data-testid='analyze-btn'] and wait up to 90s; the same AnalysisResultCard component is used so the design should render identically.",
+  "rca of the issue": "N/A — no functional issues found."
+}

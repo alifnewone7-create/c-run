@@ -1,0 +1,46 @@
+{
+  "summary": "Verified the /api/analyze bug fix (wrong Groq model id -> qwen/qwen3.8-27b), credit refund on failure, admin Groq-key CRUD, and dashboard UI regression. 8/8 backend tests pass; all UI checks pass. Groq was AVAILABLE during this run so a real chart image produced a successful 200 analysis - the old generic 500 'Failed to analyze the chart' caused by the wrong model id is gone.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/analyze", "issue": "Very small/non-chart images cause Zod schema-parse failure -> generic 500 'Failed to analyze the chart. Please try again.' This branch (route.ts:484) is technically correct behavior, but the error message is identical to the old model-id bug message, so users cannot distinguish. Consider a more specific message like 'Could not read the chart from the image, please upload a clearer screenshot.'"},
+      {"endpoint": "/api/analyze", "issue": "AI SDK Warning in logs: '\"image\" content part is deprecated. Use a \"file\" part with mediaType: image/*' - non-blocking but should be migrated."},
+      {"endpoint": "groq-keys fallback", "issue": "The two FALLBACK_KEYS shipped in /app/frontend/lib/server/groq-keys.ts (lines 25-27) are BOTH now invalid (Groq returns 401 invalid_api_key). If the DB list is ever empty, analyze will fail with an auth error. Consider removing dead fallback keys or updating them."},
+      {"endpoint": "firebase-admin", "issue": "Frontend error log shows lingering ConnectTimeoutError to 'sweetex-ai-default-rtdb.asia-southeast1.firebasedatabase.app' - looks like a leftover from the old Firebase project. Current app is functionally fine (coco-ai-c363d works) but this suggests stale config or a fallback pointing at the old RTDB."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Admin panel (/coco-private-island) sidebar", "issues": ["Header shows 'Sweetex AI / Admin Portal' instead of 'Coco AI' - leftover branding from previous project."]},
+      {"screen": "Dashboard - tier limits", "issues": ["Daily quota cards show 35/day for Standard tier, but review request states standard = 50/day per tool. Possible tier config drift - please confirm intended limit."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_coco_ai.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "OPTIONAL: differentiate error message for schema-parse-failure vs model-not-available so users don't see the generic 'Failed to analyze' message anymore.",
+    "Remove or replace the two invalid FALLBACK_KEYS in lib/server/groq-keys.ts (both now return 401).",
+    "Fix admin panel sidebar branding: 'Sweetex AI' -> 'Coco AI'.",
+    "Confirm Standard tier daily quota (dashboard shows 35, review says 50).",
+    "Fix stale sweetex-ai RTDB ConnectTimeoutError in frontend logs (leftover old Firebase project host)."
+  ],
+  "critical_code_review_comments": [
+    "route.ts:484 - schema-parse-failure branch returns same 'Failed to analyze the chart' text as the old model-id bug; recommend a distinct message so this bug pattern is observable in future.",
+    "groq-keys.ts:25 - hardcoded FALLBACK_KEYS in source code is a leak/rotation risk and both are already invalid.",
+    "usage.ts:refundCredit - swallows all errors silently; consider logging so a failed refund is visible in monitoring."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_coco_ai.py"
+  ],
+  "success_rate": {"backend": "100% (8/8)", "frontend": "100% (all UI testids present, flows work)"},
+  "test_credentials": "Admin: iamhear/iamhear/iamhear at /coco-private-island. User: qatester01@cocomail.test / CocoTest!2026 at /login.",
+  "seed_data_creation": "Test added and then deleted a dummy Groq key labeled 'TEST_ui_dummy' (id k_mu37gco7_zv4uif). Real user key 'Groq key' (gsk_rNXI...rsUH) was NOT touched. Also successfully consumed 1 credit for qatester01 on otc-chart-analyzer during the analyze success test; running counter went from 1 -> 2 (of 35).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "The BUG FIX for chart analyze is confirmed working. Model id qwen/qwen3.8-27b works when Groq is available; a real chart-shaped image returns 200. The generic-500 path can still be reached with garbage/tiny images (Zod parse fail) - if user reports 'Failed to analyze the chart. Please try again.' again, always check server logs '[v0] schema parse failed. raw text:' before assuming the model-id bug reappeared. Also note that both built-in FALLBACK_KEYS in groq-keys.ts return 401, so if the RTDB list ever empties or DB read fails, analyze will 401. To test analyze use a >=~200px candlestick-like image (see /app/backend/tests/test_coco_ai.py::_tiny_png_b64 - uses PIL to draw fake candles).",
+  "rca of the issue": "Root cause was MODEL_ID = 'qwen/qwen3.6-27b' in /app/frontend/app/api/analyze/route.ts which returned Groq 404 model_not_found; every request fell through to the outer catch and returned a generic 500. Fix: changed to 'qwen/qwen3.8-27b' (the only vision model on this Groq account). Verified end-to-end by POSTing a 400x200 synthetic candlestick PNG with a valid Firebase ID token and getting HTTP 200 with a full analysis JSON. Credit accounting also verified via GET /api/admin/users usageToday before/after."
+}

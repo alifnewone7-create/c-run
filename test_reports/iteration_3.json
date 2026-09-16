@@ -1,0 +1,31 @@
+{
+  "summary": "Frontend-only verification of the new hero engine tile gradients + animated glyphs + mobile slow-down. All acceptance criteria met on both desktop (1440x900) and mobile (390x820). No console errors/warnings on home page.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verified_behaviors": [
+    "Desktop 1440x900: all 7 tiles (engine-tile-otc/real/live/future/news/risk/feed) render with 3-stop linear-gradient backgrounds (each computed background-image contains 3 rgb() color stops).",
+    "Each tile contains .coco-tile-inner (overflow:hidden, so sheen is clipped to rounded bounds) and .coco-tile-sheen with animationName='coco-sheen', duration 6.5s and staggered delays 0s / 0.7s / 1.4s / 2.1s / 2.8s / 3.5s / 4.2s (i*0.7s as expected).",
+    "Every tile has >=1 animated glyph (measured 3 animated glyphs per tile). Verified names: g-spin 9s, g-spin-rev 11s, g-breathe 3s, g-rise / g-rise-alt 3.4s, g-flow 2.8s, g-blink 1.9s, g-wave 2.4s.",
+    "Mobile 390x820: same 7 tiles + core + wires render. Slow-down block applied: sheen 9s, g-spin 14s, g-spin-rev 16s, g-flow 4.2s, g-rise/g-rise-alt 5s. .coco-core-aura computed animation-name = 'none' on mobile as required.",
+    "Core has no white ring: engine-core border=0px, coco-core-img border=0px, no white background circle. Only violet glow via box-shadow.",
+    "Regression: navbar (Engine/Compare/How it works/Access/FAQ/Support), hero H1 'The market never sleeps. Neither does Coco AI.', both CTAs (Launch Coco AI, See access plans), 'Two ways in. Same engine.' section, and FAQ section all render. Production build already active via supervisor.",
+    "No console errors, no page errors, no warnings on either viewport."
+  ],
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Minor: .coco-tile-icon .g-* animations are all continuously running (transform / opacity) for 7 tiles simultaneously. On low-end mobile this may still accumulate paint cost even after the @media slow-down. Consider pausing via IntersectionObserver when hero is scrolled out of view, or using animation-play-state: paused when the section is off-screen.",
+    "Minor: coco-sheen keyframes hold opacity:0 from 55% to 100% (dwell), which is fine, but the 430% translate is applied on a 60%-wide element inside a small tile — visually the sheen only flashes briefly. Consider commenting the intent for future maintainers.",
+    "Nice-to-have: the desktop tiles use `--d` custom prop for entrance timing but the .coco-tile-inner does not inherit rounded corners explicitly — currently relying on `border-radius: inherit` which does inherit from parent .coco-tile. Verified overflow:hidden clips sheen; nothing leaks. OK as-is."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped)", "frontend": "100%"},
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 3 verified tile gradients (3-stop), clipped sheen sweep (6.5s desktop / 9s mobile, staggered i*0.7s delays), animated glyph micro-motion (g-spin/g-spin-rev/g-breathe/g-rise/g-flow/g-blink/g-wave) across all 7 tiles, and mobile slow-down block (g-spin 14s, g-spin-rev 16s, g-flow 4.2s, g-rise 5s, sheen 9s, core-aura none). No console errors. Analyzer pages require Firebase login and remain out of scope. Base URL: https://repo-copy-run.preview.emergentagent.com"
+}

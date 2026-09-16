@@ -1,0 +1,32 @@
+{
+  "summary": "Frontend design-system sweep verified for /live-signals, /future-signals, /news-signals, /management, /coco-private-island (admin) and 404 on both desktop 1440x900 and mobile 390x820. All target testids present, no functional regressions, upgrade gate behaves as expected for Free tier, no console/page errors, no horizontal overflow on mobile, and bottom nav visible on authed pages (hidden on 404 by design).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verified_behaviors": [
+    "Login: Firebase login with qa.coco.tester@gmail.com works and lands on /dashboard.",
+    "Live Signals (/live-signals): data-testid=live-signals-page present. Header eyebrow 'LIVE SIGNALS' and title 'One pair. One verdict. Live.' both visible. OTC/Real market tabs, pair search filter and pair selection work; after selecting a pair the Back/Change button returns to the pair grid. Pressing Generate Live Signal (Free tier) opens the 'Unlock the full experience' upgrade gate modal (surface-luxe glass card, View plans + Contact Admin CTAs) and the page does not crash.",
+    "Future Signals (/future-signals): data-testid=future-signals-page present. Eyebrow 'FUTURE SIGNALS' + title 'Queue the next entries, ahead of time.' render. Signal-count buttons 3/5/10/15 and +/- work; Generate button is correctly disabled until a market pair is selected (validation behaviour). When markets are selected the Generate button triggers the same upgrade gate modal for Free tier.",
+    "News Signals (/news-signals): data-testid=news-signals-page present. Both tabs Today's Events and Fundamental render. Locked state 'News Signals is locked' with 'Upgrade to unlock' button is shown for Free tier; clicking it opens the upgrade gate modal.",
+    "Management (/management): data-testid=management-page present. Management and Sheet tabs switch. Four numeric inputs (Initial Capital, Average Payout, Profit Target, and 4th) accept values. MTG Yes/No toggle switches state. Generate Sheet for Free tier opens the upgrade gate modal (as expected on Free tier).",
+    "Admin portal (/coco-private-island): graded dark 'Secure Portal' login card renders (RESTRICTED badge, 3 inputs). Login with username/password/secret key = iamhear succeeds. Admin dashboard renders with sidebar (Set account tier / Registered users (3) / API key) + Sign out. Clicking each sidebar item switches content (Set account tier shows tier stats and 'Set tier by email' form). Sign out returns to the login card.",
+    "404 (/no-such-page): new Coco-graded 404 renders with 'LOST WINDOW' eyebrow, big 404, 'This page is off the tape.' copy, and data-testid=notfound-home-btn 'Back to Coco AI' button. Clicking it navigates to '/'.",
+    "Visual/design consistency: Home, Dashboard, Live/Future/News/Management, Admin, and 404 all use the violet home-page grading and translucent surface-luxe glass panels. Text contrast is readable on both viewports. No horizontal overflow on mobile 390x820 (documentElement.scrollWidth === innerWidth). CocoBottomNav is present on all authed pages (Dashboard/Live/Analyzer/Future/More) and hidden on 404 by design. No console errors or page errors on any of the tested pages (only expected network 404 on /no-such-page)."
+  ],
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Nit: On Future Signals, when Generate is disabled (no market picked) there is no inline tooltip / hint explaining why. Consider adding a small helper text under the button (e.g. 'Select at least one pair to enable') to improve UX. Not blocking.",
+    "Nit: The upgrade-gate CTA copy is 'Unlock the full experience' but the trigger buttons say 'Upgrade to unlock' / 'Generate...'. Consistent, but a data-testid on the gate modal root and its buttons would make future QA far more robust."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (skipped)", "frontend": "100%"},
+  "test_credentials": "App user qa.coco.tester@gmail.com / CocoQa#2026 (Free). Admin iamhear/iamhear/iamhear.",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 4 validated the design-system conversion for live/future/news/management/admin/404. All pages use CocoPageShell + surface-luxe glass and the home-page violet grading. Upgrade gate is a single shared modal ('Unlock the full experience' with View plans + Contact Admin buttons). Free-tier account cannot invoke real Groq flows; every 'Generate' path terminates in the gate. Analyzer (OTC/Real) pages were intentionally NOT touched by this iteration but they still load. Base URL https://repo-copy-run.preview.emergentagent.com. Firebase auth persists in localStorage, so re-login is required whenever the browser context is recreated."
+}
