@@ -5,6 +5,7 @@ import {
   CandlestickChart,
   Radar,
   RadioTower,
+  Syringe,
   Infinity as InfinityIcon,
   Lock,
   Gauge,
@@ -26,6 +27,7 @@ const FEATURE_ICON: Record<
   'real-chart-analyzer': CandlestickChart,
   'future-signals': Radar,
   'live-signals': RadioTower,
+  injector: Syringe,
 }
 
 export function UsageOverview() {
@@ -76,7 +78,7 @@ export function UsageOverview() {
           <p className="text-sm font-semibold">Free account — no generations</p>
           <p className="max-w-xs text-xs text-muted-foreground">
             You can open every page, but generating signals and analyses requires a
-            paid plan. Upgrade to unlock a daily quota on all four tools.
+            paid plan. Upgrade to unlock a daily quota on all five tools.
           </p>
         </div>
       ) : (

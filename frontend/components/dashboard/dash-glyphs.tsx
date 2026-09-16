@@ -118,6 +118,19 @@ export function GlyphPulseLive({ className }: GlyphProps) {
   )
 }
 
+/* Injector: syringe driving a bolt into a candle */
+export function GlyphInjector({ className }: GlyphProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <path d="M8 24 24 8" {...s} strokeWidth="2.2" />
+      <path d="M11.5 20.5 6.5 25.5M20.5 11.5l3-3M21 6l5 5" {...s} strokeWidth="2" />
+      <path d="M12 14.5l5.5 5.5M15 11.5l5.5 5.5" {...s} strokeWidth="1.8" opacity="0.55" />
+      <path d="M9.6 15.2 16.8 8l7.2 7.2-7.2 7.2z" {...s} strokeWidth="2" />
+      <circle cx="16.8" cy="15.2" r="1.6" fill="currentColor" />
+    </svg>
+  )
+}
+
 /* Management: console sliders */
 export function GlyphConsole({ className }: GlyphProps) {
   return (

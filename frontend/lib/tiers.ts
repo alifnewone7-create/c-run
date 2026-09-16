@@ -8,13 +8,15 @@ export type FeatureKey =
   | 'real-chart-analyzer'
   | 'future-signals'
   | 'live-signals'
+  | 'injector'
 
-// The four features that consume a daily credit.
+// The five features that consume a daily credit.
 export const FEATURES: FeatureKey[] = [
   'otc-chart-analyzer',
   'real-chart-analyzer',
   'future-signals',
   'live-signals',
+  'injector',
 ]
 
 export const FEATURE_LABEL: Record<FeatureKey, string> = {
@@ -22,6 +24,7 @@ export const FEATURE_LABEL: Record<FeatureKey, string> = {
   'real-chart-analyzer': 'Real Chart Analyzer',
   'future-signals': 'Future Signals',
   'live-signals': 'Live Signals',
+  injector: 'Coco Injector',
 }
 
 export const TIER_ORDER: Tier[] = ['free', 'basic', 'standard', 'premium', 'admin']

@@ -15,6 +15,7 @@ import {
   GlyphQuota,
   GlyphOrbit,
   GlyphPulseLive,
+  GlyphInjector,
   GlyphInfinite,
   GlyphVault,
   GlyphClockRing,
@@ -28,6 +29,7 @@ const FEATURE_GLYPH: Record<FeatureKey, Glyph> = {
   'real-chart-analyzer': GlyphRealPulse,
   'future-signals': GlyphOrbit,
   'live-signals': GlyphPulseLive,
+  injector: GlyphInjector,
 }
 
 const FEATURE_TONE: Record<FeatureKey, { light: string; dark: string }> = {
@@ -35,6 +37,7 @@ const FEATURE_TONE: Record<FeatureKey, { light: string; dark: string }> = {
   'real-chart-analyzer': { light: '#6ddcae', dark: '#189a72' },
   'future-signals': { light: '#f3c775', dark: '#c2820f' },
   'live-signals': { light: '#8fb8ff', dark: '#3b62d8' },
+  injector: { light: '#f0a3ff', dark: '#b13fd6' },
 }
 
 export function DashTier() {
@@ -127,7 +130,7 @@ export function DashTier() {
               <div className="min-w-0 flex-1">
                 <h3 className="coco-sub text-[18px] sm:text-[20px]">Daily quota</h3>
                 <p className="coco-muted mt-0.5 text-[13px]">
-                  Live consumption across your four generation tools.
+                  Live consumption across your five generation tools.
                 </p>
               </div>
             </div>
@@ -135,7 +138,7 @@ export function DashTier() {
             <div className="my-5 h-px w-full bg-gradient-to-r from-[#d8c9ff] via-[var(--hairline)] to-transparent" />
 
             {loading ? (
-              <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {FEATURES.map((f) => (
                   <li
                     key={f}
@@ -151,11 +154,11 @@ export function DashTier() {
                 <p className="coco-sub text-[16px]">Locked on the Free plan</p>
                 <p className="coco-muted mx-auto max-w-[40ch] text-[13px] leading-relaxed">
                   You can browse every page, but generating results stays locked. Upgrade to unlock a
-                  daily quota across all four tools.
+                  daily quota across all five tools.
                 </p>
               </div>
             ) : (
-              <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {FEATURES.map((feature) => (
                   <QuotaCard
                     key={feature}

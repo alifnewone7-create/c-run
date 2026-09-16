@@ -11,6 +11,7 @@ import { UpgradeGateProvider } from '@/components/upgrade-gate'
 import './globals.css'
 import './coco.css'
 import './analysis-result.css'
+import './injector.css'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({

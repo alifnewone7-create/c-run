@@ -13,6 +13,7 @@ import {
   Lock,
   Infinity as InfinityIcon,
   Clock,
+  Syringe,
   type LucideIcon,
 } from 'lucide-react'
 import { useAuth } from '@/components/auth-provider'
@@ -24,6 +25,7 @@ const FEATURE_ICON: Record<FeatureKey, LucideIcon> = {
   'real-chart-analyzer': ScanSearch,
   'future-signals': Telescope,
   'live-signals': Radio,
+  injector: Syringe,
 }
 
 const FEATURE_COLOR: Record<FeatureKey, string> = {
@@ -31,6 +33,7 @@ const FEATURE_COLOR: Record<FeatureKey, string> = {
   'real-chart-analyzer': 'var(--emerald)',
   'future-signals': 'var(--gold)',
   'live-signals': 'var(--primary)',
+  injector: 'var(--primary)',
 }
 
 export function TradingChart() {
@@ -133,7 +136,7 @@ export function TradingChart() {
             <p className="text-sm font-semibold">Locked on the Free plan</p>
             <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-muted-foreground">
               You can browse every page, but generating results is locked. Upgrade
-              to unlock a daily quota across all four tools.
+              to unlock a daily quota across all five tools.
             </p>
           </div>
         </div>

@@ -6,6 +6,7 @@ import {
   GlyphOrbit,
   GlyphNewsWire,
   GlyphPulseLive,
+  GlyphInjector,
   GlyphConsole,
   GlyphArrowCorner,
 } from '@/components/dashboard/dash-glyphs'
@@ -27,6 +28,7 @@ const IRIS = { light: '#a688ff', dark: '#6d3bff', soft: '#d8c9ff' }
 const EMERALD = { light: '#6ddcae', dark: '#189a72', soft: '#b9f3dd' }
 const GOLD = { light: '#f3c775', dark: '#c2820f', soft: '#f6e3b8' }
 const AZURE = { light: '#8fb8ff', dark: '#3b62d8', soft: '#cbdcff' }
+const ORCHID = { light: '#f0a3ff', dark: '#b13fd6', soft: '#f3d3ff' }
 
 const TOOLS: Tool[] = [
   {
@@ -65,6 +67,13 @@ const TOOLS: Tool[] = [
     ...IRIS,
   },
   {
+    name: 'Coco Injector',
+    subtitle: 'Timed 2 / 5 / 10 minute injections.',
+    href: '/injector',
+    glyph: GlyphInjector,
+    ...ORCHID,
+  },
+  {
     name: 'Management',
     subtitle: 'Account, licence and workspace.',
     href: '/management',
@@ -85,11 +94,11 @@ export function DashTools() {
             <div className="min-w-0 flex-1">
               <h2 className="coco-sub text-[18px] sm:text-[21px]">Trading tools</h2>
               <p className="coco-muted mt-0.5 text-[13px] sm:text-sm">
-                Six AI systems, one console. Pick a desk and start reading the market.
+                Seven AI systems, one console. Pick a desk and start reading the market.
               </p>
             </div>
             <span className="coco-mono hidden rounded-full border border-[var(--hairline)] bg-white px-3 py-1 text-[10px] uppercase tracking-[0.14em] text-[var(--dim)] sm:inline-flex">
-              6 modules
+              7 modules
             </span>
           </div>
 

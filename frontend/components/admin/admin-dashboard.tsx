@@ -68,6 +68,7 @@ const SHORT_LABEL: Record<FeatureKey, string> = {
   'real-chart-analyzer': 'Real',
   'future-signals': 'Future',
   'live-signals': 'Live',
+  injector: 'Injector',
 }
 
 type View = 'tiers' | 'users' | 'apikeys'

@@ -17,12 +17,14 @@ import {
   X,
   ChevronRight,
   Crosshair,
+  Syringe,
 } from 'lucide-react'
 import { useAuth } from '@/components/auth-provider'
 import { BROKERS, storeBroker, type BrokerId } from '@/lib/brokers'
 import { cn } from '@/lib/utils'
 
 const MORE_LINKS = [
+  { label: 'Future Signals', href: '/future-signals', icon: Telescope },
   { label: 'OTC Chart Analyzer', href: '/otc-chart-analyzer', icon: ScanLine },
   { label: 'Real Chart Analyzer', href: '/real-chart-analyzer', icon: ScanSearch },
   { label: 'News Signals', href: '/news-signals', icon: Newspaper },
@@ -315,12 +317,12 @@ export function CocoBottomNav() {
         </button>
 
         <Link
-          href="/future-signals"
-          className={cn('coco-bnav-item', pathname === '/future-signals' && 'is-active')}
-          data-testid="bottom-nav-future"
+          href="/injector"
+          className={cn('coco-bnav-item', pathname === '/injector' && 'is-active')}
+          data-testid="bottom-nav-injector"
         >
-          <Telescope className="h-[19px] w-[19px]" />
-          <span>Future</span>
+          <Syringe className="h-[19px] w-[19px]" />
+          <span>Injector</span>
         </Link>
 
         <button

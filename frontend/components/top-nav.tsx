@@ -12,6 +12,7 @@ import {
   Telescope,
   Newspaper,
   Radio,
+  Syringe,
   SlidersHorizontal,
   LogOut,
   Menu,
@@ -33,6 +34,7 @@ const navLinks = [
   { label: 'Future Signals', href: '/future-signals', icon: Telescope },
   { label: 'News Signals', href: '/news-signals', icon: Newspaper },
   { label: 'Live Signals', href: '/live-signals', icon: Radio },
+  { label: 'Coco Injector', href: '/injector', icon: Syringe },
   { label: 'Management', href: '/management', icon: SlidersHorizontal },
 ]
 
@@ -52,6 +54,7 @@ const navSections = [
     heading: 'Signal System',
     links: [
       { label: 'Live Signals', href: '/live-signals', icon: Radio },
+      { label: 'Coco Injector', href: '/injector', icon: Syringe },
       { label: 'Future Signals', href: '/future-signals', icon: Telescope },
       { label: 'News Signals', href: '/news-signals', icon: Newspaper },
     ],
