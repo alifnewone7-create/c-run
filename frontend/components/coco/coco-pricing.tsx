@@ -56,10 +56,7 @@ export function CocoPricing() {
             className="coco-card flex flex-col p-6 text-center sm:p-8"
             data-testid="pricing-free"
           >
-            <span className="coco-mono mx-auto rounded-full border border-[#b9f3dd] bg-[#e6fff7] px-3 py-1 text-[10px] uppercase text-[#0f7a5a]">
-              $0 partner
-            </span>
-            <h3 className="coco-sub mt-4 text-xl sm:text-2xl">Partner access</h3>
+            <h3 className="coco-sub text-xl sm:text-2xl">Free access — $0 cost</h3>
             <p className="coco-muted mt-2 text-sm">Three steps and the engine unlocks at no cost.</p>
 
             <ol className="mt-6 flex flex-1 flex-col gap-3">
