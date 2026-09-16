@@ -63,3 +63,19 @@ User writes in Banglish (Bengali in Latin script) — respond accordingly.
   in globals.css, unused).
 - 16 Sep follow-up: hero grid + sweep removed, hero is solid green (CALL) / red (PUT) gradient, OTC/REAL header pill removed.
 - Still pending from earlier: apply CocoPageShell design to /login, /registration, /dashboard, /privacy.
+
+### Coco Injector page (June 2026) — VERIFIED (iteration_6.json, 100% backend + frontend)
+- New route `/injector` (metadata/OG title "Coco Injector"), no heading text at top.
+- Flow: market picker (OTC / Real segmented tabs + search + tile grid) → duration (2 / 5 / 10 min)
+  → 10s AnalyzeFlow analyzing stage → result card: SVG candle chart with projected path spanning the
+  duration (`components/injector-chart.tsx`, deterministic per seed), UP/DOWN hero, entry time (same
+  rule as Live Signals: <30s → next minute, else +2), duration, expiry, "Inject New Signal".
+- Limit system: new 5th FeatureKey `injector` in `lib/tiers.ts` (Free locked, Basic 20 / Standard 35 /
+  Premium 50 per day). Server route `app/api/signals/injector/route.ts` consumes a credit and returns
+  the direction. All `Record<FeatureKey>` maps updated (trading-chart, usage-overview, admin SHORT_LABEL,
+  dash-tier glyph/tone). Dashboard quota grid now lg:grid-cols-3 (5 cards); copy says "five tools".
+- Navigation: top nav (+ "Signal System" section), mobile bottom nav Injector item replaces Future
+  (Future Signals moved into the "More" sheet), dashboard tools grid card (7 modules).
+- Styles in `app/injector.css` (`.inj-*`, imported after coco.css; `.inj *` border override so no
+  white hairline borders on buttons/cards). `CocoPageShell` header props are now optional.
+- QA user qa.coco.tester@gmail.com set to **premium** via admin API for testing.

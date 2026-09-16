@@ -1,0 +1,26 @@
+{
+  "summary": "Comprehensive testing of the new Coco Injector feature (frontend + backend). All 9 scenarios from the review request passed. Backend gating (unauth 401, invalid duration 400) works, admin usage map exposes injector key and premium user's injector count incremented (1 -> 2) after one successful UI injection. Frontend: /injector renders with correct testids, no h1 heading in main, top nav shows Coco Injector link, tabs/search/tile filtering work (GBP shows only GBP pairs, nonsense shows 'No markets match'), OTC tiles carry '(OTC)' suffix while Real tiles do not, market -> duration -> inject flow works, analyzing lines cycle (including 'Sampling 5-minute structure...'), result card shows correct direction/entry/duration/expiry (entry rule verified: click 01:45:05 -> entry 01:46, expiry 01:51 for 5 min), reset returns to market step. Free-tier lock: standard user demoted to free saw the upgrade-gate modal (Unlock the full experience) and no analyzing stage started. User restored to standard. Mobile (390x844): no horizontal overflow, duration cards fit in one row at y=216, bottom-nav-injector present (href=/injector) replacing Future, and 'More' sheet lists Future Signals. Design check: computed border-color of .inj-btn (rgba(139,92,255,.55)), .inj-btn-ghost (rgba(190,150,255,.46)), .inj-dur (rgba(168,128,255,.2)), .inj-panel (rgba(168,128,255,.2)) are violet-tinted (NOT white/grey). Dashboard shows Coco Injector in quota + tools grid.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Note: '.inj-tile' selector was NOT_FOUND when checking computed styles (tiles are likely rendered with a different class). Not a functional issue — tiles work and appear violet-tinted visually — but if the design spec explicitly requires the class .inj-tile, main agent may want to reconcile the class name. All other listed classes (.inj-btn, .inj-btn-ghost, .inj-dur, .inj-panel) resolve correctly with non-white borders.",
+    "POST /api/signals/injector validates duration before authentication (invalid duration returns 400 even without auth cookie). Order matches spec but conventionally auth is checked first; low priority."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "qa.coco.tester@gmail.com / CocoQa#2026 (premium); qatester01@cocomail.test / CocoTest!2026 (standard, was temporarily set to free and restored)",
+  "seed_data_creation": "None. Consumed 1 injector credit on premium user (now 2/50 used today). Standard user was demoted to free for lock test and restored to standard.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All Injector acceptance criteria passed on desktop and mobile. Backend usage map exposes 'injector' key. Admin API cookie jar workflow: POST /api/admin/login {username,password,secretKey='iamhear'} -> save cookie; GET /api/admin/users returns usageToday.injector. Only spot to double-check if styles change: the .inj-tile class was not found in DOM (tiles used a different classname but visually consistent).",
+  "rca of the issue": "No bugs found."
+}
