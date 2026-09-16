@@ -451,9 +451,6 @@ function ResultCard({ result, onReset }: { result: Injection; onReset: () => voi
             <p className="inj-verdict-word coco-display" data-testid="injector-direction">
               {direction}
             </p>
-            <p className="inj-verdict-sub">
-              Momentum bias · {duration}-minute window
-            </p>
           </div>
 
           <div className="inj-verdict-chevrons" aria-hidden="true">
