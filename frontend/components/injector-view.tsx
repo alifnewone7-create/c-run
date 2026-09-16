@@ -10,12 +10,13 @@ import {
   ChevronLeft,
   ArrowUp,
   ArrowDown,
+  ChevronUp,
+  ChevronDown,
   Cpu,
   Check,
   Syringe,
   RefreshCw,
   Hourglass,
-  Sparkles,
 } from 'lucide-react'
 import { CocoPageShell } from '@/components/coco/coco-page-shell'
 import { AuthGuard } from '@/components/auth-guard'
@@ -23,7 +24,6 @@ import { PairFlags } from '@/components/pair-flags'
 import { AnalyzeFlow } from '@/components/analyze-flow'
 import { InjectorChart } from '@/components/injector-chart'
 import { otcMarkets, realMarkets, marketLabel, type Market, type MarketType } from '@/lib/markets'
-import { cn } from '@/lib/utils'
 import { useGatedAction } from '@/hooks/use-gated-action'
 
 type Step = 'market' | 'duration' | 'analyzing' | 'result'
@@ -164,7 +164,6 @@ function InjectorStudio() {
 
   return (
     <div ref={topRef} className="inj flex flex-1 scroll-mt-24 flex-col gap-4 sm:gap-5" data-testid="injector-studio">
-      <StepRail step={step} />
 
       {step === 'market' && (
         <MarketStep tab={tab} onTab={setTab} query={query} onQuery={setQuery} markets={filtered} onPick={pickMarket} />
@@ -185,32 +184,6 @@ function InjectorStudio() {
 
       {step === 'result' && result && <ResultCard result={result} onReset={reset} />}
     </div>
-  )
-}
-
-/* ── Step rail ─────────────────────────────────────────────────────── */
-
-const STEPS: { key: Step[]; label: string }[] = [
-  { key: ['market'], label: 'Market' },
-  { key: ['duration'], label: 'Duration' },
-  { key: ['analyzing', 'result'], label: 'Inject' },
-]
-
-function StepRail({ step }: { step: Step }) {
-  const activeIdx = STEPS.findIndex((s) => s.key.includes(step))
-  return (
-    <ol className="inj-rail coco-rise" data-testid="injector-step-rail">
-      {STEPS.map((s, i) => {
-        const state = i < activeIdx ? 'done' : i === activeIdx ? 'active' : 'idle'
-        return (
-          <li key={s.label} className="inj-rail-item" data-state={state}>
-            <span className="inj-rail-num">{state === 'done' ? <Check className="h-3 w-3" /> : `0${i + 1}`}</span>
-            <span className="inj-rail-label">{s.label}</span>
-            {i < STEPS.length - 1 && <span className="inj-rail-line" aria-hidden="true" />}
-          </li>
-        )
-      })}
-    </ol>
   )
 }
 
@@ -419,24 +392,26 @@ function ResultCard({ result, onReset }: { result: Injection; onReset: () => voi
   const { market, duration, direction, entry, seed } = result
   const up = direction === 'UP'
   const expiry = new Date(entry.getTime() + duration * 60_000)
+  const Arrow = up ? ArrowUp : ArrowDown
+  const Chevron = up ? ChevronUp : ChevronDown
 
   return (
     <div className="flex flex-col gap-4" data-testid="injector-result">
-      <div className="inj-ready coco-rise">
-        <Sparkles className="h-3.5 w-3.5" />
-        Signal injected
-      </div>
-
       <section
         className="inj-panel inj-result coco-rise"
         data-tone={up ? 'up' : 'down'}
-        style={{ '--d': '60ms' } as React.CSSProperties}
+        style={{ '--d': '40ms' } as React.CSSProperties}
       >
         <div className="flex items-center justify-between gap-3">
           <MarketHeader market={market} suffix="Injector" />
-          <span className="inj-dir-pill" data-testid="injector-direction-pill">
-            {up ? <ArrowUp className="h-4 w-4" strokeWidth={2.75} /> : <ArrowDown className="h-4 w-4" strokeWidth={2.75} />}
-            {direction}
+          <span className="inj-dir-tag" data-testid="injector-direction-pill">
+            <span className="inj-dir-tag-icon">
+              <Arrow className="h-3.5 w-3.5" strokeWidth={3} />
+            </span>
+            <span className="inj-dir-tag-text">
+              <i aria-hidden="true" />
+              {direction}
+            </span>
           </span>
         </div>
 
@@ -456,21 +431,40 @@ function ResultCard({ result, onReset }: { result: Injection; onReset: () => voi
           />
         </div>
 
-        <div className="inj-hero">
-          <span className="inj-hero-badge">
-            {up ? <ArrowUp className="h-7 w-7 sm:h-9 sm:w-9" strokeWidth={2.75} /> : <ArrowDown className="h-7 w-7 sm:h-9 sm:w-9" strokeWidth={2.75} />}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="inj-hero-label">Direction</p>
-            <p className="inj-hero-value coco-display" data-testid="injector-direction">
+        <div className="inj-verdict" data-dir={up ? 'up' : 'down'} data-testid="injector-verdict">
+          <span className="inj-verdict-glow" aria-hidden="true" />
+          <span className="inj-verdict-stripes" aria-hidden="true" />
+
+          <div className="inj-verdict-medal" aria-hidden="true">
+            <span className="inj-verdict-ring" />
+            <span className="inj-verdict-ring inj-verdict-ring-2" />
+            <span className="inj-verdict-core">
+              <Arrow className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={3} />
+            </span>
+          </div>
+
+          <div className="inj-verdict-body">
+            <span className="inj-verdict-kicker">
+              <i aria-hidden="true" />
+              Verdict locked
+            </span>
+            <p className="inj-verdict-word coco-display" data-testid="injector-direction">
               {direction}
             </p>
+            <p className="inj-verdict-sub">
+              Momentum bias · {duration}-minute window
+            </p>
           </div>
-          <div className="inj-eq" aria-hidden="true">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <span key={i} style={{ animationDelay: `${i * 0.12}s` }} />
+
+          <div className="inj-verdict-chevrons" aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <Chevron key={i} className="inj-verdict-chev" style={{ '--i': i } as React.CSSProperties} strokeWidth={2.5} />
             ))}
           </div>
+
+          <span className="inj-verdict-rail" aria-hidden="true">
+            <i />
+          </span>
         </div>
 
         <div className="inj-stats">
@@ -496,25 +490,10 @@ function ResultCard({ result, onReset }: { result: Injection; onReset: () => voi
               </p>
             </div>
           </div>
-          <div className="inj-stat inj-stat-wide">
-            <span className="inj-stat-icon">
-              <Hourglass className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="inj-stat-label">Expiry</p>
-              <p className="inj-stat-value coco-mono" data-testid="injector-expiry-time">
-                {formatTime(expiry)}
-              </p>
-            </div>
-          </div>
         </div>
-
-        <p className="inj-note" data-testid="injector-note">
-          Enter {up ? 'UP' : 'DOWN'} at {formatTime(entry)} with a {duration}-minute expiry · closes {formatTime(expiry)}
-        </p>
       </section>
 
-      <button type="button" onClick={onReset} className={cn('inj-btn coco-rise')} style={{ '--d': '160ms' } as React.CSSProperties} data-testid="injector-reset-button">
+      <button type="button" onClick={onReset} className="inj-btn coco-rise" style={{ '--d': '140ms' } as React.CSSProperties} data-testid="injector-reset-button">
         <span className="inj-btn-sheen" aria-hidden="true" />
         <RefreshCw className="h-4 w-4" />
         Inject New Signal

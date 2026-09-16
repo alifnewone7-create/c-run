@@ -79,3 +79,9 @@ User writes in Banglish (Bengali in Latin script) — respond accordingly.
 - Styles in `app/injector.css` (`.inj-*`, imported after coco.css; `.inj *` border override so no
   white hairline borders on buttons/cards). `CocoPageShell` header props are now optional.
 - QA user qa.coco.tester@gmail.com set to **premium** via admin API for testing.
+- Follow-up (same session): removed the step rail (Market/Duration/Inject) at the top, the "Signal
+  injected" pill, the Expiry stat card and the "Enter UP/DOWN at…" note. New "verdict plate" direction
+  card (`.inj-verdict`: spinning conic rings medallion, gradient-text UP/DOWN, animated chevron stack,
+  running bottom rail, drifting tone glow + diagonal stripes) and new header direction tag
+  (`.inj-dir-tag`: tone-filled arrow disc + pulsing dot + mono text). Verified via screenshots
+  (desktop + 390px mobile).
