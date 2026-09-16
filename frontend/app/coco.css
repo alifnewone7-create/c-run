@@ -2667,10 +2667,14 @@
 }
 
 .coco-free-price {
-  background-image: linear-gradient(100deg, #7c46ff 0%, #b388ff 45%, #12b981 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1em 0.5em;
+  border-radius: 10px;
+  background-image: linear-gradient(160deg, #ffffff 0%, #e5dbff 55%, #f6e9ff 100%);
+  border: 1px solid #dccdff;
+  box-shadow: rgba(255, 255, 255, 0.9) 0 1px 0 0 inset;
+  color: var(--iris);
   font-weight: 700;
   letter-spacing: -0.01em;
 }
