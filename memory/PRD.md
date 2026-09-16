@@ -85,3 +85,19 @@ User writes in Banglish (Bengali in Latin script) — respond accordingly.
   running bottom rail, drifting tone glow + diagonal stripes) and new header direction tag
   (`.inj-dir-tag`: tone-filled arrow disc + pulsing dot + mono text). Verified via screenshots
   (desktop + 390px mobile).
+
+### Live Signals + Future Signals redesign (June 2026) — VERIFIED (iteration_7.json, 100%)
+- Both pages rebuilt on the Injector design language; no page heading. Shared kit in
+  `components/signal-kit.tsx` (BrokerBar/useBroker, SegTabs, SearchBox, MarketGrid (single/multi),
+  MarketHeader, AnalyzingStage (AnalyzeFlow), DirTag, VerdictPlate, StatTile, PrimaryButton,
+  computeLiveEntry). Injector view refactored to use the kit. Styles: `app/injector.css` (`.inj-*`,
+  tone vars now via `.inj [data-tone]`) + new `app/signals.css` (`.sig-*` broker bar/picker, `.fs-*`
+  future queue). No white borders anywhere on these pages.
+- Broker selection on both pages: default Quotex, picker (modal desktop / bottom sheet mobile) with
+  Binolla / Quotex / Pocket Option, persisted in localStorage `coco:broker` (shared with analyzer).
+  Result cards show broker logo + name (BrokerLine).
+- Live: broker bar → market grid → confirm (1 Minute / 1 Step MTG) → analyzing → result (dir tag,
+  broker line, 1-min projected chart, verdict plate, entry/duration/MTG tiles).
+- Future: broker bar → build (tabs w/ category lock, search, multi-select tiles, chips, presets +
+  stepper 1..20) → analyzing → result (queue header, broker line, UP/DOWN mix, tone-railed signal
+  cards with entry time + 1 Min, "Build New Queue").
