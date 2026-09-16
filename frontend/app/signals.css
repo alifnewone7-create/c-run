@@ -1,0 +1,527 @@
+/* ── Shared signal tools: broker bar / picker ("sig-") + future queue ("fs-") ── */
+
+/* broker bar */
+.sig-broker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px 10px 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(168, 128, 255, 0.22);
+  background:
+    radial-gradient(70% 120% at 0% 50%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
+  background-color: rgba(23, 12, 60, 0.55);
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.25s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+}
+.sig-broker:hover {
+  border-color: rgba(190, 150, 255, 0.46);
+  transform: translateY(-1px);
+  box-shadow: rgba(109, 59, 255, 0.3) 0 16px 34px -20px;
+}
+.sig-broker-logo {
+  display: grid;
+  place-items: center;
+  height: 40px;
+  width: 40px;
+  flex: none;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow:
+    color-mix(in oklab, var(--accent) 45%, transparent) 0 10px 22px -12px,
+    rgba(255, 255, 255, 0.6) 0 0 0 1px inset;
+}
+.sig-broker-logo img {
+  height: 24px;
+  width: 24px;
+  object-fit: contain;
+}
+.sig-broker-logo-sm {
+  height: 28px;
+  width: 28px;
+  border-radius: 9px;
+}
+.sig-broker-logo-sm img {
+  height: 17px;
+  width: 17px;
+}
+.sig-broker-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-tech), ui-monospace, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(214, 200, 255, 0.6);
+}
+.sig-broker-name {
+  display: block;
+  margin-top: 1px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.sig-broker-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 32px;
+  padding: 0 10px 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(190, 150, 255, 0.46);
+  background: rgba(139, 92, 255, 0.12);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(232, 222, 255, 0.9);
+  transition: background-color 0.2s ease;
+}
+.sig-broker:hover .sig-broker-change {
+  background: rgba(139, 92, 255, 0.22);
+}
+
+/* broker line inside result cards */
+.sig-broker-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 12px 5px 5px;
+  border-radius: 999px;
+  border: 1px solid rgba(168, 128, 255, 0.22);
+  background: rgba(12, 6, 32, 0.45);
+}
+.sig-broker-line-label {
+  font-family: var(--font-tech), ui-monospace, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(214, 200, 255, 0.55);
+}
+.sig-broker-line-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* broker picker */
+.sig-picker-root {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+@media (min-width: 640px) {
+  .sig-picker-root {
+    align-items: center;
+    padding: 16px;
+  }
+}
+.sig-picker-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 4, 26, 0.78);
+  backdrop-filter: blur(6px);
+  cursor: default;
+}
+.sig-picker {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 460px;
+  padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+  border-radius: 26px 26px 0 0;
+  border: 1px solid rgba(168, 128, 255, 0.28);
+  border-bottom: 0;
+  background:
+    radial-gradient(90% 60% at 50% -10%, rgba(150, 105, 255, 0.24), transparent 60%),
+    linear-gradient(180deg, #241656 0%, #140b34 55%, #0b0620 100%);
+  box-shadow: rgba(5, 2, 18, 0.7) 0 30px 70px -28px;
+  animation: coco-sheet-up 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (min-width: 640px) {
+  .sig-picker {
+    padding: 20px;
+    border-radius: 26px;
+    border-bottom: 1px solid rgba(168, 128, 255, 0.28);
+  }
+}
+.sig-picker-close {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  width: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(190, 150, 255, 0.4);
+  background: rgba(139, 92, 255, 0.16);
+  color: #f0e9ff;
+}
+.sig-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.sig-picker-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 8px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(168, 128, 255, 0.22);
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in oklab, var(--accent) 28%, transparent), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  color: #fff;
+  opacity: 0;
+  animation: inj-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms) forwards;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.sig-picker-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in oklab, var(--accent) 60%, rgba(190, 150, 255, 0.5));
+}
+.sig-picker-card[data-on='true'] {
+  border-color: color-mix(in oklab, var(--accent) 70%, #fff 10%);
+  box-shadow:
+    color-mix(in oklab, var(--accent) 50%, transparent) 0 18px 36px -18px,
+    color-mix(in oklab, var(--accent) 45%, transparent) 0 0 0 1px inset;
+}
+.sig-picker-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  height: 18px;
+  width: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(190, 150, 255, 0.46);
+  color: transparent;
+}
+.sig-picker-card[data-on='true'] .sig-picker-check {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+.sig-picker-logo {
+  display: grid;
+  place-items: center;
+  height: 52px;
+  width: 52px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: color-mix(in oklab, var(--accent) 45%, transparent) 0 12px 24px -12px;
+}
+.sig-picker-logo img {
+  height: 32px;
+  width: 32px;
+  object-fit: contain;
+}
+.sig-picker-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+.sig-picker-foot {
+  text-align: center;
+  font-size: 11.5px;
+  color: rgba(214, 200, 255, 0.5);
+}
+
+/* ── future queue ── */
+.fs-lock {
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 255, 0.3);
+  background: rgba(139, 92, 255, 0.1);
+  font-size: 12px;
+  color: #d9c8ff;
+}
+.fs-selected-empty {
+  padding: 4px 2px;
+  font-size: 12.5px;
+  color: rgba(214, 200, 255, 0.55);
+}
+.fs-selected {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(168, 128, 255, 0.2);
+  background: rgba(12, 6, 32, 0.35);
+}
+.fs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.fs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 4px 6px 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(168, 128, 255, 0.28);
+  background: rgba(139, 92, 255, 0.12);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(232, 222, 255, 0.92);
+  animation: inj-pop 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.fs-chip button {
+  display: grid;
+  place-items: center;
+  height: 18px;
+  width: 18px;
+  border-radius: 999px;
+  color: rgba(214, 200, 255, 0.6);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.fs-chip button:hover {
+  background: rgba(255, 93, 108, 0.2);
+  color: #ff8b96;
+}
+
+/* count control */
+.fs-count {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(168, 128, 255, 0.2);
+  background: rgba(12, 6, 32, 0.35);
+}
+@media (min-width: 640px) {
+  .fs-count {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+  }
+}
+.fs-count-sub {
+  font-size: 11.5px;
+  color: rgba(214, 200, 255, 0.55);
+}
+.fs-count-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.fs-presets {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(168, 128, 255, 0.2);
+  background: rgba(9, 5, 26, 0.5);
+}
+.fs-preset {
+  min-width: 34px;
+  height: 30px;
+  border-radius: 8px;
+  font-family: var(--font-tech), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(214, 200, 255, 0.65);
+  transition: background-image 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+.fs-preset:hover {
+  background-color: rgba(139, 92, 255, 0.14);
+  color: #fff;
+}
+.fs-preset[data-on='true'] {
+  background-image: linear-gradient(180deg, #9a66ff, #6d3bff);
+  color: #fff;
+  box-shadow: rgba(139, 92, 255, 0.5) 0 8px 18px -8px;
+}
+.fs-stepper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(168, 128, 255, 0.2);
+  background: rgba(9, 5, 26, 0.5);
+}
+.fs-stepper button {
+  display: grid;
+  place-items: center;
+  height: 30px;
+  width: 30px;
+  border-radius: 8px;
+  color: #fff;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+.fs-stepper button:hover:not(:disabled) {
+  background: rgba(139, 92, 255, 0.18);
+}
+.fs-stepper button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.fs-stepper input {
+  width: 42px;
+  background: transparent;
+  border: 0;
+  outline: none;
+  text-align: center;
+  font-family: var(--font-tech), ui-monospace, monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.fs-stepper input::-webkit-inner-spin-button,
+.fs-stepper input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/* result header bits */
+.fs-flag-stack {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+.fs-flag-stack > * + * {
+  margin-left: -8px;
+}
+.fs-flag-more {
+  display: grid;
+  place-items: center;
+  height: 18px;
+  min-width: 26px;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 1px solid rgba(190, 150, 255, 0.46);
+  background: #1d1049;
+  font-family: var(--font-tech), ui-monospace, monospace;
+  font-size: 9px;
+  color: #fff;
+}
+.fs-mix {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(168, 128, 255, 0.22);
+  background: rgba(12, 6, 32, 0.45);
+}
+.fs-mix i {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-family: var(--font-tech), ui-monospace, monospace;
+  font-size: 11px;
+  font-style: normal;
+  background: rgba(var(--inj-tone-rgb), 0.14);
+  color: var(--inj-tone);
+}
+
+/* signal list */
+.fs-list {
+  display: grid;
+  gap: 10px;
+}
+@media (min-width: 640px) {
+  .fs-list {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.fs-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  padding: 12px 12px 12px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--inj-tone-rgb), 0.26);
+  background:
+    radial-gradient(80% 100% at 0% 50%, rgba(var(--inj-tone-rgb), 0.14), transparent 55%),
+    rgba(12, 6, 32, 0.5);
+  opacity: 0;
+  animation: inj-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0ms) forwards;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
+}
+.fs-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--inj-tone-rgb), 0.5);
+}
+.fs-card-rail {
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, var(--inj-tone-soft), var(--inj-tone));
+  box-shadow: rgba(var(--inj-tone-rgb), 0.6) 0 0 12px;
+}
+.fs-card-index {
+  flex: none;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(214, 200, 255, 0.5);
+}
+.fs-card-main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+}
+.fs-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.fs-card-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 8px;
+  border: 1px solid rgba(168, 128, 255, 0.2);
+  background: rgba(9, 5, 26, 0.5);
+  font-family: var(--font-tech), ui-monospace, monospace;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: #e6dcff;
+}
+.fs-card-meta svg {
+  color: #c7adff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sig-picker-card,
+  .fs-card,
+  .fs-chip {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}

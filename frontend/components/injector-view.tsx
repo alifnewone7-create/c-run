@@ -1,34 +1,30 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import {
-  Radio,
-  Landmark,
-  Search,
-  Clock,
-  Timer,
-  ChevronLeft,
-  ArrowUp,
-  ArrowDown,
-  ChevronUp,
-  ChevronDown,
-  Cpu,
-  Check,
-  Syringe,
-  RefreshCw,
-  Hourglass,
-} from 'lucide-react'
+import { Clock, Timer, Check, Syringe, RefreshCw, Hourglass } from 'lucide-react'
 import { CocoPageShell } from '@/components/coco/coco-page-shell'
 import { AuthGuard } from '@/components/auth-guard'
-import { PairFlags } from '@/components/pair-flags'
-import { AnalyzeFlow } from '@/components/analyze-flow'
 import { InjectorChart } from '@/components/injector-chart'
-import { otcMarkets, realMarkets, marketLabel, type Market, type MarketType } from '@/lib/markets'
+import {
+  AnalyzingStage,
+  DirTag,
+  MarketGrid,
+  MarketHeader,
+  PrimaryButton,
+  SearchBox,
+  SegTabs,
+  StatTile,
+  VerdictPlate,
+  computeLiveEntry,
+  formatTime,
+  useMarketFilter,
+  type Direction,
+} from '@/components/signal-kit'
+import { otcMarkets, realMarkets, type Market, type MarketType } from '@/lib/markets'
 import { useGatedAction } from '@/hooks/use-gated-action'
 
 type Step = 'market' | 'duration' | 'analyzing' | 'result'
 type Duration = 2 | 5 | 10
-type Direction = 'UP' | 'DOWN'
 
 type Injection = {
   market: Market
@@ -56,18 +52,6 @@ function analysisLines(duration: number) {
   ]
 }
 
-function formatTime(d: Date) {
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
-}
-
-// Same rule as Live Signals: <30s into the minute => next minute, else skip one.
-function computeEntry(now = new Date()): Date {
-  const entry = new Date(now)
-  entry.setSeconds(0, 0)
-  entry.setMinutes(entry.getMinutes() + (now.getSeconds() < 30 ? 1 : 2))
-  return entry
-}
-
 export function InjectorView() {
   return (
     <AuthGuard>
@@ -92,11 +76,8 @@ function InjectorStudio() {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const topRef = useRef<HTMLDivElement | null>(null)
 
-  const markets = tab === 'otc' ? otcMarkets : realMarkets
-  const filtered = useMemo(() => {
-    const q = query.trim().toUpperCase()
-    return q ? markets.filter((m) => `${m.base}/${m.quote}`.includes(q)) : markets
-  }, [markets, query])
+  const filtered = useMarketFilter(tab === 'otc' ? otcMarkets : realMarkets, query)
+  const lines = useMemo(() => analysisLines(duration ?? 2), [duration])
 
   useEffect(() => () => {
     if (timerRef.current) clearTimeout(timerRef.current)
@@ -145,13 +126,13 @@ function InjectorStudio() {
       scrollTop()
       if (timerRef.current) clearTimeout(timerRef.current)
       timerRef.current = setTimeout(() => {
-        const entry = computeEntry()
+        const entry = computeLiveEntry()
         setResult({
           market,
           duration,
           direction: data.direction,
           entry,
-          seed: (entry.getTime() / 60000) ^ market.id.length * 7919 ^ duration * 104729,
+          seed: (entry.getTime() / 60000) ^ (market.id.length * 7919) ^ (duration * 104729),
         })
         setStep('result')
       }, ANALYZING_MS)
@@ -164,255 +145,82 @@ function InjectorStudio() {
 
   return (
     <div ref={topRef} className="inj flex flex-1 scroll-mt-24 flex-col gap-4 sm:gap-5" data-testid="injector-studio">
-
       {step === 'market' && (
-        <MarketStep tab={tab} onTab={setTab} query={query} onQuery={setQuery} markets={filtered} onPick={pickMarket} />
+        <section className="inj-panel coco-rise" style={{ '--d': '80ms' } as React.CSSProperties} data-testid="injector-market-step">
+          <SegTabs tab={tab} onTab={setTab} testidPrefix="injector" />
+          <SearchBox value={query} onChange={setQuery} testid="injector-search" />
+          <MarketGrid markets={filtered} query={query} onPick={pickMarket} testidPrefix="injector" />
+        </section>
       )}
 
       {step === 'duration' && market && (
-        <DurationStep
-          market={market}
-          duration={duration}
-          onDuration={setDuration}
-          onBack={reset}
-          onInject={inject}
-          busy={busy}
-        />
+        <section className="inj-panel coco-rise" style={{ '--d': '80ms' } as React.CSSProperties} data-testid="injector-duration-step">
+          <MarketHeader market={market} onBack={reset} backTestid="injector-change-market" nameTestid="injector-selected-market" />
+          <div className="inj-divider" />
+          <div className="flex items-center justify-between gap-3">
+            <p className="inj-kicker inj-kicker-soft">Select duration</p>
+            <span className="inj-chip">
+              <Hourglass className="h-3 w-3" />
+              Expiry window
+            </span>
+          </div>
+          <div className="inj-dur-grid" role="radiogroup" aria-label="Select duration">
+            {DURATIONS.map((d, i) => {
+              const on = duration === d.value
+              return (
+                <button
+                  key={d.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => setDuration(d.value)}
+                  className="inj-dur"
+                  data-on={on}
+                  style={{ '--d': `${120 + i * 70}ms` } as React.CSSProperties}
+                  data-testid={`injector-duration-${d.value}`}
+                >
+                  <span className="inj-dur-check" aria-hidden="true">
+                    <Check className="h-3 w-3" />
+                  </span>
+                  <span className="inj-dur-num coco-display">
+                    {d.value}
+                    <small>min</small>
+                  </span>
+                  <span className="inj-dur-tag">{d.tag}</span>
+                  <span className="inj-dur-note">{d.note}</span>
+                </button>
+              )
+            })}
+          </div>
+          <PrimaryButton onClick={inject} disabled={!duration || busy} icon={Syringe} testid="injector-inject-button">
+            {busy ? 'Preparing…' : duration ? `Inject ${duration}-minute signal` : 'Select a duration to inject'}
+          </PrimaryButton>
+        </section>
       )}
 
-      {step === 'analyzing' && market && duration && <AnalyzingStage market={market} duration={duration} />}
+      {step === 'analyzing' && market && duration && (
+        <section className="inj-panel coco-rise" style={{ '--d': '40ms' } as React.CSSProperties}>
+          <MarketHeader market={market} suffix={`${duration} min`} nameTestid="injector-selected-market" />
+          <div className="inj-divider" />
+          <AnalyzingStage lines={lines} durationMs={ANALYZING_MS} testid="injector-analyzing" />
+        </section>
+      )}
 
       {step === 'result' && result && <ResultCard result={result} onReset={reset} />}
     </div>
   )
 }
 
-/* ── Step 1: market ─────────────────────────────────────────────────── */
-
-function MarketStep({
-  tab,
-  onTab,
-  query,
-  onQuery,
-  markets,
-  onPick,
-}: {
-  tab: MarketType
-  onTab: (t: MarketType) => void
-  query: string
-  onQuery: (q: string) => void
-  markets: Market[]
-  onPick: (m: Market) => void
-}) {
-  return (
-    <section className="inj-panel coco-rise" style={{ '--d': '80ms' } as React.CSSProperties} data-testid="injector-market-step">
-      <div className="inj-seg" data-active={tab}>
-        <span className="inj-seg-thumb" aria-hidden="true" />
-        <button type="button" className="inj-seg-item" data-active={tab === 'otc'} onClick={() => onTab('otc')} data-testid="injector-tab-otc">
-          <Radio className="h-4 w-4" />
-          OTC Market
-        </button>
-        <button type="button" className="inj-seg-item" data-active={tab === 'real'} onClick={() => onTab('real')} data-testid="injector-tab-real">
-          <Landmark className="h-4 w-4" />
-          Real Market
-        </button>
-      </div>
-
-      <label className="inj-search">
-        <Search className="h-4 w-4" />
-        <input
-          value={query}
-          onChange={(e) => onQuery(e.target.value)}
-          placeholder="Search pair (e.g. EUR/USD)"
-          data-testid="injector-search"
-        />
-      </label>
-
-      <div className="inj-grid-wrap">
-        <div className="inj-grid scroll-rail" data-testid="injector-market-grid">
-          {markets.map((m, i) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => onPick(m)}
-              className="inj-tile"
-              style={{ '--d': `${Math.min(i, 24) * 30}ms` } as React.CSSProperties}
-              data-testid={`injector-market-${m.type}-${m.base}${m.quote}`}
-            >
-              <PairFlags base={m.base} quote={m.quote} size={22} className="inj-tile-flags" />
-              <span className="inj-tile-label">{marketLabel(m)}</span>
-            </button>
-          ))}
-          {markets.length === 0 && <p className="inj-empty">No markets match “{query}”.</p>}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ── Step 2: duration ──────────────────────────────────────────────── */
-
-function MarketHeader({ market, suffix, onBack }: { market: Market; suffix?: string; onBack?: () => void }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
-        <PairFlags base={market.base} quote={market.quote} size={30} />
-        <div>
-          <p className="coco-sub text-[17px] leading-tight text-white sm:text-lg" data-testid="injector-selected-market">
-            {marketLabel(market)}
-          </p>
-          <p className="inj-kicker">
-            {market.type === 'otc' ? 'OTC Market' : 'Real Market'}
-            {suffix ? ` · ${suffix}` : ''}
-          </p>
-        </div>
-      </div>
-      {onBack && (
-        <button type="button" onClick={onBack} className="inj-btn-ghost" data-testid="injector-change-market">
-          <ChevronLeft className="h-3.5 w-3.5" />
-          Change
-        </button>
-      )}
-    </div>
-  )
-}
-
-function DurationStep({
-  market,
-  duration,
-  onDuration,
-  onBack,
-  onInject,
-  busy,
-}: {
-  market: Market
-  duration: Duration | null
-  onDuration: (d: Duration) => void
-  onBack: () => void
-  onInject: () => void
-  busy: boolean
-}) {
-  return (
-    <section className="inj-panel coco-rise" style={{ '--d': '80ms' } as React.CSSProperties} data-testid="injector-duration-step">
-      <MarketHeader market={market} onBack={onBack} />
-
-      <div className="inj-divider" />
-
-      <div className="flex items-center justify-between gap-3">
-        <p className="inj-kicker inj-kicker-soft">Select duration</p>
-        <span className="inj-chip">
-          <Hourglass className="h-3 w-3" />
-          Expiry window
-        </span>
-      </div>
-
-      <div className="inj-dur-grid" role="radiogroup" aria-label="Select duration">
-        {DURATIONS.map((d, i) => {
-          const on = duration === d.value
-          return (
-            <button
-              key={d.value}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => onDuration(d.value)}
-              className="inj-dur"
-              data-on={on}
-              style={{ '--d': `${120 + i * 70}ms` } as React.CSSProperties}
-              data-testid={`injector-duration-${d.value}`}
-            >
-              <span className="inj-dur-check" aria-hidden="true">
-                <Check className="h-3 w-3" />
-              </span>
-              <span className="inj-dur-num coco-display">
-                {d.value}
-                <small>min</small>
-              </span>
-              <span className="inj-dur-tag">{d.tag}</span>
-              <span className="inj-dur-note">{d.note}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      <button
-        type="button"
-        onClick={onInject}
-        disabled={!duration || busy}
-        className="inj-btn"
-        data-testid="injector-inject-button"
-      >
-        <span className="inj-btn-sheen" aria-hidden="true" />
-        <Syringe className="h-[18px] w-[18px]" />
-        {busy ? 'Preparing…' : duration ? `Inject ${duration}-minute signal` : 'Select a duration to inject'}
-      </button>
-    </section>
-  )
-}
-
-/* ── Step 3: analyzing ─────────────────────────────────────────────── */
-
-function AnalyzingStage({ market, duration }: { market: Market; duration: Duration }) {
-  const lines = useMemo(() => analysisLines(duration), [duration])
-  const [line, setLine] = useState(0)
-
-  useEffect(() => {
-    setLine(0)
-    const step = ANALYZING_MS / (lines.length + 1)
-    const timers = lines.map((_, i) => setTimeout(() => setLine(i + 1), step * (i + 1)))
-    return () => timers.forEach(clearTimeout)
-  }, [lines])
-
-  return (
-    <section className="inj-panel coco-rise" style={{ '--d': '40ms' } as React.CSSProperties} data-testid="injector-analyzing">
-      <MarketHeader market={market} suffix={`${duration} min`} />
-      <div className="inj-divider" />
-
-      <div className="inj-stage">
-        <AnalyzeFlow stage={line} />
-
-        <div className="inj-stage-line" data-testid="injector-analyzing-line">
-          <Cpu className="h-3.5 w-3.5" />
-          <span className="animate-pulse">{lines[Math.min(line, lines.length - 1)]}…</span>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          {lines.map((_, i) => (
-            <span key={i} className="inj-dot" data-on={i < line} />
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ── Step 4: result ────────────────────────────────────────────────── */
-
 function ResultCard({ result, onReset }: { result: Injection; onReset: () => void }) {
   const { market, duration, direction, entry, seed } = result
-  const up = direction === 'UP'
   const expiry = new Date(entry.getTime() + duration * 60_000)
-  const Arrow = up ? ArrowUp : ArrowDown
-  const Chevron = up ? ChevronUp : ChevronDown
 
   return (
     <div className="flex flex-col gap-4" data-testid="injector-result">
-      <section
-        className="inj-panel inj-result coco-rise"
-        data-tone={up ? 'up' : 'down'}
-        style={{ '--d': '40ms' } as React.CSSProperties}
-      >
+      <section className="inj-panel coco-rise" data-tone={direction === 'UP' ? 'up' : 'down'} style={{ '--d': '40ms' } as React.CSSProperties}>
         <div className="flex items-center justify-between gap-3">
-          <MarketHeader market={market} suffix="Injector" />
-          <span className="inj-dir-tag" data-testid="injector-direction-pill">
-            <span className="inj-dir-tag-icon">
-              <Arrow className="h-3.5 w-3.5" strokeWidth={3} />
-            </span>
-            <span className="inj-dir-tag-text">
-              <i aria-hidden="true" />
-              {direction}
-            </span>
-          </span>
+          <MarketHeader market={market} suffix="Injector" nameTestid="injector-selected-market" />
+          <DirTag direction={direction} testid="injector-direction-pill" />
         </div>
 
         <div className="inj-chart">
@@ -431,70 +239,17 @@ function ResultCard({ result, onReset }: { result: Injection; onReset: () => voi
           />
         </div>
 
-        <div className="inj-verdict" data-dir={up ? 'up' : 'down'} data-testid="injector-verdict">
-          <span className="inj-verdict-glow" aria-hidden="true" />
-          <span className="inj-verdict-stripes" aria-hidden="true" />
-
-          <div className="inj-verdict-medal" aria-hidden="true">
-            <span className="inj-verdict-ring" />
-            <span className="inj-verdict-ring inj-verdict-ring-2" />
-            <span className="inj-verdict-core">
-              <Arrow className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={3} />
-            </span>
-          </div>
-
-          <div className="inj-verdict-body">
-            <span className="inj-verdict-kicker">
-              <i aria-hidden="true" />
-              Verdict locked
-            </span>
-            <p className="inj-verdict-word coco-display" data-testid="injector-direction">
-              {direction}
-            </p>
-          </div>
-
-          <div className="inj-verdict-chevrons" aria-hidden="true">
-            {[0, 1, 2].map((i) => (
-              <Chevron key={i} className="inj-verdict-chev" style={{ '--i': i } as React.CSSProperties} strokeWidth={2.5} />
-            ))}
-          </div>
-
-          <span className="inj-verdict-rail" aria-hidden="true">
-            <i />
-          </span>
-        </div>
+        <VerdictPlate direction={direction} testid="injector-verdict" />
 
         <div className="inj-stats">
-          <div className="inj-stat">
-            <span className="inj-stat-icon">
-              <Clock className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="inj-stat-label">Entry time</p>
-              <p className="inj-stat-value coco-mono" data-testid="injector-entry-time">
-                {formatTime(entry)}
-              </p>
-            </div>
-          </div>
-          <div className="inj-stat">
-            <span className="inj-stat-icon">
-              <Timer className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="inj-stat-label">Duration</p>
-              <p className="inj-stat-value coco-mono" data-testid="injector-duration">
-                {duration} Min
-              </p>
-            </div>
-          </div>
+          <StatTile icon={Clock} label="Entry time" value={formatTime(entry)} testid="injector-entry-time" />
+          <StatTile icon={Timer} label="Duration" value={`${duration} Min`} testid="injector-duration" />
         </div>
       </section>
 
-      <button type="button" onClick={onReset} className="inj-btn coco-rise" style={{ '--d': '140ms' } as React.CSSProperties} data-testid="injector-reset-button">
-        <span className="inj-btn-sheen" aria-hidden="true" />
-        <RefreshCw className="h-4 w-4" />
+      <PrimaryButton onClick={onReset} icon={RefreshCw} testid="injector-reset-button" delay="140ms">
         Inject New Signal
-      </button>
+      </PrimaryButton>
     </div>
   )
 }
